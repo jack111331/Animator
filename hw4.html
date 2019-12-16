@@ -7,12 +7,14 @@
 precision mediump float;
 
 layout(location=0) in vec3 vPosition;
-layout(location=1) in vec3 vColor;
-layout(location=2) in vec3 vNormal;
+layout(location=1) in vec3 vNormal;
+layout(location=2) in vec2 vTextureCoords;
+layout(location=3) in vec4 vBoneWeight;
+layout(location=4) in ivec4 vBoneIndex;
 
 out vec4 fPosition;
-out vec4 fColor;
 out vec4 fNormal;
+out vec2 fTextureCoords;
 
 uniform mat4 modelingMatrix;
 uniform mat4 viewingMatrix;
@@ -31,6 +33,7 @@ void main()
 
     fColor = vec4(vColor, 1.0);
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * P;
+    fTextureCoords = vTextureCoords;
 }
 </script>
 
@@ -39,8 +42,8 @@ void main()
 precision mediump float;
 
 in vec4 fPosition;
-in vec4 fColor;  // Note that this will be interpolated between vertices.
 in vec4 fNormal;
+in vec2 fTextureCoords;
 
 out vec4 color;
 
@@ -73,7 +76,7 @@ void main()
     vec4  specular = Ks * materialSpecular;
 
 	// fColor influences the ambient and the diffuse, but not the specular
-    color = (ambient + diffuse) * fColor + specular;
+    color = (ambient + diffuse) * vec4(1.0, 1.0, 1.0, 1.0) + specular;
 }
 </script>
 

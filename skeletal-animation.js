@@ -1,9 +1,8 @@
- 
- 
 function handleLoadedModel(object) {
     var meshesCount = object.meshes.length;
     console.log(meshesCount);
     object.vbo = new Array(meshesCount);
+    object.ebo = new Array(meshesCount);
     for(var i = 0;i < meshesCount;i++) {
         // extract bone
         var mesh = object.meshes[i];
@@ -39,6 +38,8 @@ function handleLoadedModel(object) {
         gl.bindBuffer(gl.ARRAY_BUFFER, object.vbo[i]);
         gl.bufferData(gl.ARRAY_BUFFER, flatten([]), gl.STATIC_DRAW, 0, 4 * (mesh.vertices.length + mesh.normals.length + mesh.texturecoords.length +  bonesWeightPerVertices.length) + 2 * (bonesIndexPerVertices.length));
 
+        mesh.boneWeight = flatten(bonesWeightPerVertices);
+        mesh.boneIndex = new Uint16Array(bonesIndexPerVertices);
         var destOffset = 0;
         gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, flatten(mesh.vertices), 0, 4 * mesh.vertices.length);
         destOffset += 4 * mesh.vertices.length;
@@ -46,13 +47,37 @@ function handleLoadedModel(object) {
         destOffset += 4 * mesh.normals.length;
         gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, flatten(mesh.texturecoords), 0, 4 * mesh.texturecoords.length);
         destOffset += 4 * mesh.texturecoords.length;
-        gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, flatten(bonesWeightPerVertices), 0, 4 * bonesWeightPerVertices.length);
-        destOffset += 4 * bonesWeightPerVertices.length;
-        gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, new Uint16Array(bonesIndexPerVertices), 0, 2 * bonesIndexPerVertices.length);
+        gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, flatten(mesh.boneWeight), 0, 4 * mesh.boneWeight.length);
+        destOffset += 4 * mesh.boneWeight.length;
+        gl.bufferSubData(gl.ARRAY_BUFFER, destOffset, mesh.boneIndex, 0, 2 * mesh.boneIndex.length);
 
         
-        object.ebo = gl.createBuffer();
-        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo );
-        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, object.faces, gl.STATIC_DRAW );
+        object.ebo[i] = gl.createBuffer();
+        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo[i] );
+        gl.bufferData( gl.ELEMENT_ARRAY_BUFFER, mesh.faces, gl.STATIC_DRAW );
     }
+}
+function renderAssimpObject(object)
+{
+    for(var i = 0;i < object.vbo.length;i++) {
+        var mesh = object.meshes[i];
+        gl.bindBuffer( gl.ARRAY_BUFFER, object.vbo[i] );
+        
+        var destOffset = 0;
+        gl.vertexAttribPointer( vPosition, 3, gl.FLOAT, false, 0, destOffset );
+        destOffset += 4 * mesh.vertices.length;
+        gl.vertexAttribPointer( vNormal, 3, gl.FLOAT, false, 0, destOffset );
+        destOffset += 4 * mesh.normals.length;
+        gl.vertexAttribPointer( vTextureCoords, 2, gl.FLOAT, false, 0, destOffset );
+        destOffset += 4 * mesh.texturecoords.length;
+        gl.vertexAttribPointer( vBoneWeight, 4, gl.FLOAT, false, 0, destOffset );
+        destOffset += 4 * mesh.boneWeight.length;
+        gl.vertexAttribPointer( vBoneIndex, 4, gl.UNSIGNED_SHORT, false, 0, destOffset );
+
+        gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo[i] );
+        gl.uniformMatrix4fv( modelingLoc,   0, flatten(mat4()) );
+        gl.drawElements( gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0 );
+	
+    }
+	
 }
