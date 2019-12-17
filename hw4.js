@@ -17,8 +17,6 @@ var mouseDown = false;
 var lastMouseX = null;
 var lastMouseY = null;
 
-var vPosition, vNormal, vTextureCoords, vBoneWeight, vBoneIndex;
-
 var moonRotationMatrix = mat4();
 
 function handleMouseDown(event) {
@@ -94,7 +92,7 @@ window.onload = function init()
     
     //  Load shaders and initialize attribute buffers
     
-    program = initShaders( gl, "vertex-shader", "fragment-shader" );
+    program = initShaders( gl, "object-vs", "object-fs" );
     gl.useProgram( program );
     
 	// uniform variables in shaders
@@ -114,20 +112,9 @@ window.onload = function init()
        flatten(materialSpecular) );	       
     gl.uniform1f( gl.getUniformLocation(program, "shininess"), materialShininess);
     
-	vPosition = gl.getAttribLocation( program, "vPosition" );
-	gl.enableVertexAttribArray( vPosition );
-
-	vNormal = gl.getAttribLocation( program, "vNormal" );
-	gl.enableVertexAttribArray( vNormal );
-
-	vTextureCoords = gl.getAttribLocation( program, "vTextureCoords" );
-	gl.enableVertexAttribArray( vTextureCoords );
-
-	vBoneWeight = gl.getAttribLocation( program, "vBoneWeight" );
-	gl.enableVertexAttribArray( vBoneWeight );
-
-	vBoneIndex = gl.getAttribLocation( program, "vBoneIndex" );
-	gl.enableVertexAttribArray( vBoneIndex );
+    for(var i = 0;i < 5;i++) {
+        gl.enableVertexAttribArray(i);
+    }
 		
     //event listeners for buttons 
     document.getElementById( "xButton" ).onclick = rotateX;
@@ -145,11 +132,6 @@ window.onload = function init()
 };
 
 function render() {
-    if(modelMesh) {
-        if(modelMesh.vbo == 'undefined') {
-            handleLoadedModel(modelMesh)
-        }
-    }
 	var modeling = mult(rotate(theta[xAxis], 1, 0, 0),
 	                mult(rotate(theta[yAxis], 0, 1, 0),rotate(theta[zAxis], 0, 0, 1)));
 
@@ -164,8 +146,16 @@ function render() {
     if (! paused) theta[axis] += 2.0;
 	if (depthTest) gl.enable(gl.DEPTH_TEST); else gl.disable(gl.DEPTH_TEST);
 	
+    gl.useProgram( program );
+    
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
+        
+    if(modelMesh) {
+        modelMesh.transform = modeling;
+        renderAssimpObject(modelMesh);
+        
+    }
 	
     requestAnimFrame( render );
 }

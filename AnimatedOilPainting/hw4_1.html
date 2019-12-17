@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script id="object-vs" type="x-vertex-shader">
+#version 300 es
+precision mediump float;
+
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec3 vColor;
+layout(location=2) in vec3 vNormal;
+
+out vec4 fPosition;
+out vec4 fColor;
+out vec4 fNormal;
+
+uniform mat4 modelingMatrix;
+uniform mat4 viewingMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+
+void main()
+{
+    vec4 P = vec4(vPosition, 1.0);
+    vec4 N = vec4(vNormal, 0.0);
+        
+	fPosition = modelingMatrix * P;
+
+    N = modelingMatrix * N ;	// Normal vector
+    fNormal = normalize( N );
+
+    fColor = vec4(vColor, 1.0);
+    gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * P;
+}
+</script>
+
+<script id="object-fs" type="x-fragment-shader">
+#version 300 es
+precision mediump float;
+
+in vec4 fPosition;
+in vec4 fColor;
+in vec4 fNormal;
+
+layout (location=0) out vec4 fragColor;
+layout (location=1) out uvec4 intensity;
+
+uniform mat4 modelingMatrix;
+uniform mat4 viewingMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+
+uniform vec4 eyePosition;
+uniform vec4 lightPosition;
+uniform vec4 materialAmbient;
+uniform vec4 materialDiffuse;
+uniform vec4 materialSpecular;
+uniform float shininess;
+
+
+void main()
+{
+    vec4 L = normalize( lightPosition - fPosition ); // Light vector
+    vec4 N = normalize( fNormal );	// Normal vector
+	vec4 V = normalize( eyePosition - fPosition );		// Eye vector.
+    vec4 H = normalize( L + V );  // Halfway vector in the modified Phong model
+	
+    // Compute terms in the illumination equation
+    vec4 ambient = materialAmbient;
+
+    float Kd = max( dot(L, N), 0.0 );
+    vec4  diffuse = Kd * materialDiffuse;
+
+	float Ks = pow( max(dot(N, H), 0.0), shininess );
+    vec4  specular = Ks * materialSpecular;
+
+	// fColor influences the ambient and the diffuse, but not the specular
+	float intensity_level = 5.0;
+	vec4 finalColor = (ambient + diffuse) * fColor + specular;
+    fragColor = finalColor;
+	intensity = uvec4((finalColor.r + finalColor.g + finalColor.b) / 3.0 * intensity_level);
+}
+</script>
+
+<script id="screen-vs" type="x-vertex-shader">
+#version 300 es
+precision mediump float;
+
+layout(location = 0) in vec2 vPosition;
+layout(location = 1) in vec2 vTexCoord;
+
+out vec2 fTexCoord;
+
+void main()
+{
+    fTexCoord = vTexCoord;
+    gl_Position = vec4(vPosition, 0.0, 1.0);
+}
+</script>
+
+<script id="screen-fs" type="x-fragment-shader">
+#version 300 es
+precision mediump float;
+precision mediump usampler2D;
+
+in vec2 fTexCoord;
+out vec4 color;
+
+uniform sampler2D colorSampler;
+uniform usampler2D intensitySampler;
+
+const float offset = 1.0 / 512.0; 
+
+void main()
+{
+    vec2 offsets[81];
+//     vec2 offsets[81] = vec2[](
+//             vec2(-offset,  offset), // 左上
+//             vec2( 0.0f,    offset), // 正上
+//             vec2( offset,  offset), // 右上
+//             vec2(-offset,  0.0f),   // 左
+//             vec2( 0.0f,    0.0f),   // 中
+//             vec2( offset,  0.0f),   // 右
+//             vec2(-offset, -offset), // 左下
+//             vec2( 0.0f,   -offset), // 正下
+//             vec2( offset, -offset)  // 右下
+//         );
+    for(int i = -4;i <= 4;i++) {
+        for(int j = -4;j <= 4;j++) {
+            offsets[(i+4)*9+j+4] = vec2(offset * float(i), offset * float(j));
+        }
+    }
+    uint intensity_table[9];
+    int statistic[255];
+    uint max_statistic = 0u;
+    for(int i = 0;i < 9;i++) {
+        uint intensity = uint(texture(intensitySampler, fTexCoord + offsets[i]).r);
+        intensity_table[i] = intensity;
+        statistic[intensity]++;
+        if(statistic[max_statistic] < statistic[intensity]) {
+            max_statistic = intensity;
+        }
+    }
+    vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
+    for(int i = 0;i < 81;i++) {
+        if(intensity_table[i] == max_statistic) {
+            finalColor += texture(colorSampler, fTexCoord + offsets[i]);
+        }
+    }
+    finalColor /= float(statistic[max_statistic]);
+    color = finalColor;
+//     color = texture(colorSampler, fTexCoord);
+
+    
+//     float intensity = float(texture(intensitySampler, fTexCoord).r);
+//     color = vec4(intensity, 0.0, 0.0, 1.0);
+}
+</script>
+
+
+<script type="text/javascript" src="Common/webgl-utils.js"></script>
+<script type="text/javascript" src="Common/initShaders.js"></script>
+<script type="text/javascript" src="Common/MV.js"></script>
+<script type="text/javascript" src="basic-objects-IFS.js"></script>
+<script type="text/javascript" src="hw4.js"></script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+
+<br/>
+<button id="xButton">Rotate X</button>
+<button id="yButton">Rotate Y</button>
+<button id="zButton">Rotate Z</button>
+<br/>
+<button id="pButton" style="background-color:#00ff00">Pause</button>
+<button id="dButton" style="background-color:#6688cc">Depth Test</button>
+
+</body>
+</html>
