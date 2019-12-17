@@ -44,6 +44,11 @@ in vec4 fPosition;
 in vec4 fNormal;
 in vec2 fTexCoords;
 
+uniform sampler2D diffuseTexture;
+uniform sampler2D specularTexture;
+uniform sampler2D heightTexture;
+uniform sampler2D normalTexture;
+
 out vec4 color;
 
 uniform mat4 modelingMatrix;
@@ -75,7 +80,8 @@ void main()
     vec4 specular = Ks * materialSpecular;
 
 	// fColor influences the ambient and the diffuse, but not the specular
-    color = (ambient + diffuse) * vec4(1.0, 1.0, 1.0, 1.0) + specular;
+//     color = (ambient + diffuse) * texture(diffuseTexture, fTexCoords) + specular;
+    color = texture(diffuseTexture, fTexCoords);
 }
 </script>
 
@@ -83,8 +89,10 @@ void main()
 <script type="text/javascript" src="Common/initShaders.js"></script>
 <script type="text/javascript" src="Common/MV.js"></script>
 <script type="text/javascript" src="basic-objects-IFS.js"></script>
-<script type="text/javascript" src="hw4.js"></script>
+<script type="text/javascript" src="bob_lamp_update_mesh.js"></script>
+<script type="text/javascript" src="bob_lamp_update_anim.js"></script>
 <script type="text/javascript" src="skeletal-animation.js"></script>
+<script type="text/javascript" src="hw4.js"></script>
 </head>
 
 <body>
@@ -99,22 +107,5 @@ Oops ... your browser doesn't support the HTML5 canvas element
 <br/>
 <button id="pButton" style="background-color:#00ff00">Pause</button>
 <button id="dButton" style="background-color:#6688cc">Depth Test</button>
-<input type="file" id="model-mesh">
-<script>
-    document.getElementById('model-mesh').addEventListener('change', function selectedFileChanged() {
-        if (this.files.length === 0) {
-            console.log('No file selected.');
-            return;
-        }
-        const reader = new FileReader();
-
-        reader.onload = function fileReadCompleted() {
-            console.log(JSON.parse(reader.result));
-            modelMesh = JSON.parse(reader.result);
-            handleLoadedModel(modelMesh);
-        }
-        reader.readAsText(this.files[0]);
-    });
-</script>
 </body>
 </html>

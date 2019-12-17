@@ -1,8 +1,6 @@
 var gl;
 var program;
 
-var modelMesh;
-
 var xAxis = 0;
 var yAxis = 1;
 var zAxis = 2;
@@ -111,6 +109,8 @@ window.onload = function init()
     gl.uniform4fv( gl.getUniformLocation(program, "materialSpecular"), 
        flatten(materialSpecular) );	       
     gl.uniform1f( gl.getUniformLocation(program, "shininess"), materialShininess);
+
+    handleLoadedModel(modelMesh);
     
     for(var i = 0;i < 5;i++) {
         gl.enableVertexAttribArray(i);
@@ -151,11 +151,8 @@ function render() {
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
         
-    if(modelMesh) {
-        modelMesh.transform = modeling;
-        renderAssimpObject(modelMesh);
-        
-    }
+    modelMesh.transform = modeling;
+    renderAssimpObject(modelMesh);
 	
     requestAnimFrame( render );
 }
