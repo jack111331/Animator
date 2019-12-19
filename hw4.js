@@ -111,6 +111,8 @@ window.onload = function init()
     gl.uniform1f( gl.getUniformLocation(program, "shininess"), materialShininess);
 
     handleLoadedModel(modelMesh);
+    console.log(modelMesh);
+    console.log(modelAnim);
     
     for(var i = 0;i < 5;i++) {
         gl.enableVertexAttribArray(i);
@@ -151,7 +153,7 @@ function render() {
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
         
-    modelMesh.transform = modeling;
+    modelMesh.transform = mult(scale(0.1, 0.1, 0.1), modeling);
     renderAssimpObject(modelMesh);
 	
     requestAnimFrame( render );

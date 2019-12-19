@@ -43110,28 +43110,28 @@ var modelMesh = {
           semantic: 6,
           index: 0,
           type: 3,
-          value: 'bob_body_local.tga'
+          value: 'bob_body_local.png'
         },
         {
           key: '$tex.file',
           semantic: 2,
           index: 0,
           type: 3,
-          value: 'bob_body_s.tga'
+          value: 'bob_body_s.png'
         },
         {
           key: '$tex.file',
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_body_d.tga'
+          value: 'bob_body_d.png'
         },
         {
           key: '$tex.file',
           semantic: 5,
           index: 0,
           type: 3,
-          value: 'bob_body_h.tga'
+          value: 'bob_body_h.png'
         },
         {
           key: '?mat.name',
@@ -43149,28 +43149,28 @@ var modelMesh = {
           semantic: 6,
           index: 0,
           type: 3,
-          value: 'bob_head_local.tga'
+          value: 'bob_head_local.png'
         },
         {
           key: '$tex.file',
           semantic: 2,
           index: 0,
           type: 3,
-          value: 'bob_head_s.tga'
+          value: 'bob_head_s.png'
         },
         {
           key: '$tex.file',
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_head_d.tga'
+          value: 'bob_head_d.png'
         },
         {
           key: '$tex.file',
           semantic: 5,
           index: 0,
           type: 3,
-          value: 'bob_head_h.tga'
+          value: 'bob_head_h.png'
         },
         {
           key: '?mat.name',
@@ -43188,28 +43188,28 @@ var modelMesh = {
           semantic: 6,
           index: 0,
           type: 3,
-          value: 'bob_helmet_local.tga'
+          value: 'bob_helmet_local.png'
         },
         {
           key: '$tex.file',
           semantic: 2,
           index: 0,
           type: 3,
-          value: 'bob_helmet_s.tga'
+          value: 'bob_helmet_s.png'
         },
         {
           key: '$tex.file',
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_helmet_d.tga'
+          value: 'bob_helmet_d.png'
         },
         {
           key: '$tex.file',
           semantic: 5,
           index: 0,
           type: 3,
-          value: 'bob_helmet_h.tga'
+          value: 'bob_helmet_h.png'
         },
         {
           key: '?mat.name',
@@ -43227,28 +43227,28 @@ var modelMesh = {
           semantic: 6,
           index: 0,
           type: 3,
-          value: 'lantern_local.tga'
+          value: 'lantern_local.png'
         },
         {
           key: '$tex.file',
           semantic: 2,
           index: 0,
           type: 3,
-          value: 'lantern_s.tga'
+          value: 'lantern_s.png'
         },
         {
           key: '$tex.file',
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern_d.tga'
+          value: 'lantern_d.png'
         },
         {
           key: '$tex.file',
           semantic: 5,
           index: 0,
           type: 3,
-          value: 'lantern_h.tga'
+          value: 'lantern_h.png'
         },
         {
           key: '?mat.name',
@@ -43266,28 +43266,28 @@ var modelMesh = {
           semantic: 6,
           index: 0,
           type: 3,
-          value: 'lantern_top_local.tga'
+          value: 'lantern_top_local.png'
         },
         {
           key: '$tex.file',
           semantic: 2,
           index: 0,
           type: 3,
-          value: 'lantern_top_s.tga'
+          value: 'lantern_top_s.png'
         },
         {
           key: '$tex.file',
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern_top_d.tga'
+          value: 'lantern_top_d.png'
         },
         {
           key: '$tex.file',
           semantic: 5,
           index: 0,
           type: 3,
-          value: 'lantern_top_h.tga'
+          value: 'lantern_top_h.png'
         },
         {
           key: '?mat.name',

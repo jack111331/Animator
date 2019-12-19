@@ -249,7 +249,6 @@ window.onload = function init()
     // Initialize a texture
     //
     var image = new Image();
-    image.crossOrigin = "anonymous";
     image.onload = function() { 
         configureTexture( image );
     }

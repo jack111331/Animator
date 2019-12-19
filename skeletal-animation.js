@@ -9,9 +9,10 @@ function configureMaterials( object ) {
             if(texture.semantic != 0) {
                 object.totalMaterial++;
                 var image = new Image();
-                image.onload = (function(texture) {
-                    texture.texture = gl.createTexture();
-                    gl.bindTexture( gl.TEXTURE_2D, texture.texture );
+                image.texture = object.materials[i].properties[j];
+                image.onload = function() {
+                    this.texture.texture = gl.createTexture();
+                    gl.bindTexture( gl.TEXTURE_2D, this.texture.texture );
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
                     gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image );
                     gl.generateMipmap( gl.TEXTURE_2D );
@@ -19,7 +20,7 @@ function configureMaterials( object ) {
                                     gl.NEAREST_MIPMAP_LINEAR );
                     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
                     object.currentLoadMaterial++;
-                })(texture);
+                };
                 image.src = "SA2011_black.gif"; // TODO generalize
             }
         }
@@ -111,7 +112,6 @@ function renderAssimpObject(object)
             destOffset += 4 * mesh.boneWeight.length;
             gl.vertexAttribPointer( 4, 4, gl.UNSIGNED_SHORT, false, 0, destOffset );
 
-            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo[i] );
             // use material
             var material = object.materials[mesh.materialindex];
             for(var j = 0;j < material.properties.length;j++) {
@@ -119,23 +119,23 @@ function renderAssimpObject(object)
                 if(texture.semantic == 1) {
                     gl.uniform1i(gl.getUniformLocation(program, "diffuseTexture"), 1);
                     gl.activeTexture(gl.TEXTURE0 + 1);
-                    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 } else if(texture.semantic == 2) {
                     gl.uniform1i(gl.getUniformLocation(program, "specularTexture"), 2);
                     gl.activeTexture(gl.TEXTURE0 + 2);
-                    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 } else if(texture.semantic == 5) {
                     gl.uniform1i(gl.getUniformLocation(program, "heightTexture"), 5);
                     gl.activeTexture(gl.TEXTURE0 + 5);
-                    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 } else if(texture.semantic == 6) {
                     gl.uniform1i(gl.getUniformLocation(program, "normalTexture"), 6);
                     gl.activeTexture(gl.TEXTURE0 + 6);
-                    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 }
+                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
             }
+            gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo[i] );
             gl.uniformMatrix4fv( modelingLoc,   0, flatten(object.transform) );
             gl.drawElements( gl.TRIANGLES, mesh.faces.length, gl.UNSIGNED_SHORT, 0 );
         }
     }
+}
+function computeKeyframeBone(object, animObject, keyframeFirst, keyframeSecond) {
 }
