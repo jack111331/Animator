@@ -1,4 +1,4 @@
-{
+var modelMesh = {
   rootnode: {
     name: 'RootNode',
     transformation: [

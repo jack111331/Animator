@@ -74,6 +74,7 @@ var materialShininess = 30.0;
 
 window.onload = function init()
 {
+    
     var canvas = document.getElementById( "gl-canvas" );
     
     gl = canvas.getContext("webgl2");
@@ -112,7 +113,6 @@ window.onload = function init()
 
     handleLoadedModel(modelMesh);
     console.log(modelMesh);
-    console.log(modelAnim);
     
     for(var i = 0;i < 5;i++) {
         gl.enableVertexAttribArray(i);
@@ -129,7 +129,7 @@ window.onload = function init()
 	canvas.onmousedown = handleMouseDown;
     document.onmouseup = handleMouseUp;
     document.onmousemove = handleMouseMove;
-
+        
     render();
 };
 

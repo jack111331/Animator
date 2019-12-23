@@ -20,6 +20,7 @@ uniform mat4 modelingMatrix;
 uniform mat4 viewingMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
+uniform mat4[40] boneMatrix;
 
 void main()
 {
@@ -88,9 +89,9 @@ void main()
 <script type="text/javascript" src="Common/webgl-utils.js"></script>
 <script type="text/javascript" src="Common/initShaders.js"></script>
 <script type="text/javascript" src="Common/MV.js"></script>
+<script type="text/javascript" src="quaternion.js"></script>
 <script type="text/javascript" src="basic-objects-IFS.js"></script>
 <script type="text/javascript" src="bob_lamp_update_mesh.js"></script>
-<script type="text/javascript" src="bob_lamp_update_anim.js"></script>
 <script type="text/javascript" src="skeletal-animation.js"></script>
 <script type="text/javascript" src="hw4.js"></script>
 </head>

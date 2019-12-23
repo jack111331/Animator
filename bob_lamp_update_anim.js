@@ -1,4 +1,4 @@
-{
+var modelAnim = {
   rootnode: {
     name: '<MD5_Hierarchy>',
     transformation: [
