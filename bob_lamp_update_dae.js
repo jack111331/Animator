@@ -1,4 +1,4 @@
-{
+var modelMesh = {
   rootnode: {
     name: 'Scene',
     transformation: [
@@ -32453,7 +32453,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobBody.tga'
+          value: 'bobBody.png'
         },
         {
           key: '$tex.mapmodeu',
@@ -32633,7 +32633,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobHead.tga'
+          value: 'bobHead.png'
         },
         {
           key: '$tex.mapmodeu',
@@ -32813,7 +32813,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobHelmet.tga'
+          value: 'bobHelmet.png'
         },
         {
           key: '$tex.mapmodeu',
@@ -32993,7 +32993,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern.tga'
+          value: 'lantern.png'
         },
         {
           key: '$tex.mapmodeu',
@@ -33173,7 +33173,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lanternTop.tga'
+          value: 'lanternTop.png'
         },
         {
           key: '$tex.mapmodeu',

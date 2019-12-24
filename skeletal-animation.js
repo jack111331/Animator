@@ -15,10 +15,9 @@ function configureMaterials( object ) {
                     this.texture.texture = gl.createTexture();
                     gl.bindTexture( gl.TEXTURE_2D, this.texture.texture );
 //                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-                    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this );
+                    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this );
                     gl.generateMipmap( gl.TEXTURE_2D );
-                    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, 
-                                    gl.NEAREST_MIPMAP_LINEAR );
+                    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR );
                     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
                     object.currentLoadMaterial++;
                 };
@@ -44,6 +43,7 @@ function handleLoadedModelBone(object, node) {
 function handleLoadedModel(object) {
     // Deal with bones
     handleLoadedModelBone(object, object.rootnode.children[0]) // need to find out rig node
+    console.log(object.boneIndexDict);
     
     // Deal with meshes
     var meshesCount = object.meshes.length;
@@ -84,6 +84,8 @@ function handleLoadedModel(object) {
         }
         mesh.boneWeight = flatten(bonesWeightPerVertices);
         mesh.boneIndex = new Uint16Array(bonesIndexPerVertices.flat());
+        console.log(mesh.boneIndex);
+        console.log(mesh.boneWeight);
         mesh.faces = new Uint16Array(mesh.faces.flat());
 
         // pass data to gpu        
@@ -114,7 +116,7 @@ function renderAssimpObject(object)
     if(object.currentLoadMaterial == object.totalMaterial) {
         // pass bone into uniform
     
-        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0], object.animations[0], 10, 11, 0.2);
+        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0], object.animations[0], 0, 1, 0.2);
         for(var i = 0;i < keyframeBones.matrix.length;i++) {
             gl.uniformMatrix4fv(gl.getUniformLocation(program, 'boneMatrix['+ i.toString() + ']'), false, flatten(keyframeBones.matrix[i]));
         }
@@ -143,17 +145,20 @@ function renderAssimpObject(object)
                     if(texture.semantic == 1) {
                         gl.uniform1i(gl.getUniformLocation(program, "diffuseTexture"), 1);
                         gl.activeTexture(gl.TEXTURE0 + 1);
+                        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 2) {
                         gl.uniform1i(gl.getUniformLocation(program, "specularTexture"), 2);
                         gl.activeTexture(gl.TEXTURE0 + 2);
+                        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 5) {
                         gl.uniform1i(gl.getUniformLocation(program, "heightTexture"), 5);
                         gl.activeTexture(gl.TEXTURE0 + 5);
+                        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 6) {
                         gl.uniform1i(gl.getUniformLocation(program, "normalTexture"), 6);
                         gl.activeTexture(gl.TEXTURE0 + 6);
+                        gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     }
-                    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 }
             }
             gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, object.ebo[i] );
@@ -163,10 +168,16 @@ function renderAssimpObject(object)
     }
 }
 function findmaxBelowNumber(keyArray, number) {
-    var buf = 0;
+    var buf = -1;
     for(var i = 0;i < keyArray.length;i++) {
-        if(keyArray[i][0] > buf && keyArray[i][0] < number) {
-            buf = keyArray[i][0];
+        if(buf < 0) {
+            if(keyArray[i][0] <= number) {
+                buf = i;
+            }
+        } else {
+            if(keyArray[i][0] > keyArray[buf][0] && keyArray[i][0] <= number) {
+                buf = i;
+            }
         }
     }
     return buf;
@@ -238,6 +249,7 @@ function computeBone(object, node, parentTransform, keyframeFirstBones, keyframe
         }
 //         var originBoneIndex = object.boneIndexDict.get("origin");
 //         console.log(node.name, object.boneOffsetMatrixDict.get(originBoneIndex));
+//         console.log(glm.mat4(object.boneOffsetMatrixDict.get(originBoneIndex));
 //         keyframeFinalBones.matrix[boneIndex] = mult(object.boneOffsetMatrixDict.get(originBoneIndex), mult(keyframeFinalBones.matrix[boneIndex], object.boneOffsetMatrixDict.get(boneIndex)));
         if(object.boneOffsetMatrixDict.get(boneIndex) != undefined) {
             keyframeFinalBones.matrix[boneIndex] = mult(keyframeFinalBones.matrix[boneIndex], object.boneOffsetMatrixDict.get(boneIndex));

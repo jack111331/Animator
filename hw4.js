@@ -111,6 +111,7 @@ window.onload = function init()
        flatten(materialSpecular) );	       
     gl.uniform1f( gl.getUniformLocation(program, "shininess"), materialShininess);
 
+    console.log(modelMesh);
     handleLoadedModel(modelMesh);
     console.log(modelMesh);
     
@@ -130,8 +131,8 @@ window.onload = function init()
     document.onmouseup = handleMouseUp;
     document.onmousemove = handleMouseMove;
     
-    var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0], modelMesh.animations[0], 0, 1, 0.3);
-    console.log(keyframeBones);
+//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0], modelMesh.animations[0], 0, 20, 0.2);
+//     console.log(keyframeBones);
         
     render();
 };
@@ -156,7 +157,7 @@ function render() {
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
         
-    modelMesh.transform = mult(translate(0.0, -1.0, 0.0), mult(scale(0.4, 0.4, 0.4), modeling));
+    modelMesh.transform = mult(translate(0.0, 0.0, 0.0), mult(scale(0.4, 0.4, 0.4), modeling));
     renderAssimpObject(modelMesh);
 	
     requestAnimFrame( render );
