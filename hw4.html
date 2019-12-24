@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8"/>
 <html>
 <head>
 
@@ -10,7 +11,7 @@ layout (location=0) in vec3 vPosition;
 layout (location=1) in vec3 vNormal;
 layout (location=2) in vec2 vTexCoords;
 layout (location=3) in vec4 vBoneWeight;
-layout (location=4) in ivec4 vBoneIndex;
+layout (location=4) in uvec4 vBoneIndex;
 
 out vec4 fPosition;
 out vec4 fNormal;
@@ -24,10 +25,15 @@ uniform mat4[40] boneMatrix;
 
 void main()
 {
+    mat4 boneTransform = vBoneWeight[0] * boneMatrix[vBoneIndex[0]];
+    for(int i = 1;i < 4;i++) {
+        boneTransform += vBoneWeight[i] * boneMatrix[vBoneIndex[i]];
+    }
+
     vec4 P = vec4(vPosition, 1.0);
     vec4 N = vec4(vNormal, 0.0);
         
-	fPosition = modelingMatrix * P;
+	fPosition = modelingMatrix * boneTransform * P;
 
     N = modelingMatrix * N ;	// Normal vector
     fNormal = normalize( N );

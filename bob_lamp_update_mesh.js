@@ -31867,7 +31867,7 @@ var modelMesh = {
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_body.tga'
+          value: 'bob_body.png'
         },
         {
           key: '$tex.uvtrafo',
@@ -31963,7 +31963,7 @@ var modelMesh = {
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_head.tga'
+          value: 'bob_head.png'
         },
         {
           key: '$tex.uvtrafo',
@@ -32059,7 +32059,7 @@ var modelMesh = {
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bob_helmet.tga'
+          value: 'bob_helmet.png'
         },
         {
           key: '$tex.uvtrafo',
@@ -32155,7 +32155,7 @@ var modelMesh = {
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern.tga'
+          value: 'lantern.png'
         },
         {
           key: '$tex.uvtrafo',
@@ -32251,7 +32251,7 @@ var modelMesh = {
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern_top.tga'
+          value: 'lantern_top.png'
         },
         {
           key: '$tex.uvtrafo',
