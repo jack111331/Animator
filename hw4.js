@@ -131,7 +131,7 @@ window.onload = function init()
     document.onmouseup = handleMouseUp;
     document.onmousemove = handleMouseMove;
     
-//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0], modelMesh.animations[0], 0, 20, 0.2);
+//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0], modelMesh.animations[0], 120, 121, 0.2);
 //     console.log(keyframeBones);
         
     render();
@@ -157,7 +157,7 @@ function render() {
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
         
-    modelMesh.transform = mult(translate(0.0, 0.0, 0.0), mult(scale(0.4, 0.4, 0.4), modeling));
+    modelMesh.transform = mult(translate(0.0, 0.0, -4.0), mult(scale(0.4, 0.4, 0.4), modeling));
     renderAssimpObject(modelMesh);
 	
     requestAnimFrame( render );

@@ -1,4 +1,4 @@
-{
+var modelMesh = {
   rootnode: {
     name: 'Scene',
     transformation: [
@@ -32453,7 +32453,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobBody.tga'
+          value: 'bob_body.gif'
         },
         {
           key: '$tex.mapmodeu',
@@ -32633,7 +32633,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobHead.tga'
+          value: 'bob_head.gif'
         },
         {
           key: '$tex.mapmodeu',
@@ -32813,7 +32813,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'bobHelmet.tga'
+          value: 'bob_helmet.gif'
         },
         {
           key: '$tex.mapmodeu',
@@ -32993,7 +32993,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lantern.tga'
+          value: 'lantern.gif'
         },
         {
           key: '$tex.mapmodeu',
@@ -33173,7 +33173,7 @@
           semantic: 1,
           index: 0,
           type: 3,
-          value: 'lanternTop.tga'
+          value: 'lantern_top.gif'
         },
         {
           key: '$tex.mapmodeu',
@@ -33221,7 +33221,7 @@
   ],
   animations: [
     {
-      name: 'AnimStack::bob.RIG|wlk_s',
+      name: 'AnimStack::bob_RIG|wlk_s',
       tickspersecond: 25,
       duration: 140,
       channels: [
@@ -34930,7 +34930,7 @@
           ]
         },
         {
-          name: 'bob.RIG_$AssimpFbxNull$',
+          name: 'bob_RIG',
           prestate: 0,
           poststate: 0,
           positionkeys: [

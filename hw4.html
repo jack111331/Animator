@@ -21,14 +21,14 @@ uniform mat4 modelingMatrix;
 uniform mat4 viewingMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
-uniform mat4[40] boneMatrix;
+uniform mat4 boneMatrix[40];
 
 void main()
 {
-    mat4 boneTransform = vBoneWeight[0] * boneMatrix[vBoneIndex[0]];
-    for(int i = 1;i < 4;i++) {
-        boneTransform += vBoneWeight[i] * boneMatrix[vBoneIndex[i]];
-    }
+    mat4 boneTransform = boneMatrix[vBoneIndex[0]] * vBoneWeight[0];
+    boneTransform += boneMatrix[vBoneIndex[1]] * vBoneWeight[1];
+    boneTransform += boneMatrix[vBoneIndex[2]] * vBoneWeight[2];
+    boneTransform += boneMatrix[vBoneIndex[3]] * vBoneWeight[3];
 
     vec4 P = vec4(vPosition, 1.0);
     vec4 N = vec4(vNormal, 0.0);
@@ -37,7 +37,6 @@ void main()
 
     N = modelingMatrix * N ;	// Normal vector
     fNormal = normalize( N );
-
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * boneTransform * P;
     fTexCoords = vTexCoords;
 }
@@ -97,9 +96,10 @@ void main()
 <script type="text/javascript" src="Common/MV.js"></script>
 <!--<script type="text/javascript" src="Common/glm-js.min.js"></script>
 <script type="text/javascript" src="Common/glm-gl-matrix.min.js"></script>-->
+<script type="text/javascript" src="Common/math.js"></script>-->
 <script type="text/javascript" src="quaternion.js"></script>
 <script type="text/javascript" src="basic-objects-IFS.js"></script>
-<script type="text/javascript" src="bob_lamp_update_mesh.js"></script>
+<script type="text/javascript" src="bob_lamp_update_dae.js"></script>
 <script type="text/javascript" src="skeletal-animation.js"></script>
 <script type="text/javascript" src="hw4.js"></script>
 </head>
