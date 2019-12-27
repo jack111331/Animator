@@ -29,9 +29,12 @@ function handleLoadedModelBone(object, node) {
     if(object.boneIndexDict == undefined) {
         object.boneIndexDict = new Map();
     }
+    if(object.boneTransformDict == undefined) {
+        object.boneTransformDict = new Map();
+    }
     object.boneIndexDict.set(node.name, object.boneIndexDict.size)
+    object.boneTransformDict.set(object.boneIndexDict.get(node.name), new mat4(node.transformation));
     if(node.children != undefined) {
-
         for(var i = 0;i < node.children.length;i++) {
             handleLoadedModelBone(object, node.children[i])
         }
@@ -40,7 +43,7 @@ function handleLoadedModelBone(object, node) {
 
 function handleLoadedModel(object) {
     // Deal with bones
-    handleLoadedModelBone(object, object.rootnode.children[0]) // need to find out rig node
+    handleLoadedModelBone(object, object.rootnode.children[0].children[0]) // root node of bones
     console.log(object.boneIndexDict);
     
     // Deal with meshes
@@ -69,6 +72,9 @@ function handleLoadedModel(object) {
         for(var j = 0;j < bonesCount;j++) {
             var bone = mesh.bones[j];
             var boneIndex = object.boneIndexDict.get(bone.name);
+            if(object.boneOffsetMatrixDict.get(boneIndex) != undefined) {
+                console.log(i, j);
+            }
             object.boneOffsetMatrixDict.set(boneIndex, new mat4(bone.offsetmatrix));
             for(var k = 0;k < bone.weights.length;k++) {
                 // bone.weights[k][0] is vertice index
@@ -114,8 +120,8 @@ function renderAssimpObject(object)
     if(object.currentLoadMaterial == object.totalMaterial) {
         // pass bone into uniform
     
-        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0], object.animations[0], 0, 0, 0.7);
-        for(var i = 0;i < keyframeBones.matrix.length;i++) {
+        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0].children[0], object.animations[0], 0, 0, 0.0);
+        for(var i = 0;i < keyframeBones.matrix.length-1;i++) {
             var ithBoneMatrix = 'boneMatrix['+ i.toString() + ']';
             gl.uniformMatrix4fv(gl.getUniformLocation(program, ithBoneMatrix), false, flatten(keyframeBones.matrix[i]));
         }
@@ -190,12 +196,6 @@ function interpolate(vectorFirst, vectorSecond, portion) {
     }
     return result;
 }
-function getLength(vector) {
-    return Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2]);
-}
-function getAngle(vectorFirst, vectorSecond) {
-    return Math.acos((vectorFirst[0] * vectorSecond[0] + vectorFirst[1] * vectorSecond[1] + vectorFirst[2] * vectorSecond[2]) / (getLength(vectorFirst) * getLength(vectorSecond)));
-}
 function computeKeyframeBone(object, rootnode, animation, keyframeFirst, keyframeSecond, timePortion) {
     var boneCount = animation.channels.length;
     
@@ -234,16 +234,18 @@ function computeKeyframeBone(object, rootnode, animation, keyframeFirst, keyfram
 }
 function computeBone(object, node, parentTransform, keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, timePortion) {
     var boneIndex = object.boneIndexDict.get(node.name);
-    
-    keyframeFinalBones.positionkey[boneIndex] = interpolate(keyframeFirstBones.positionkey[boneIndex], keyframeSecondBones.positionkey[boneIndex], timePortion);
     var firstRotation = new Quaternion(keyframeFirstBones.rotationkey[boneIndex][0], keyframeFirstBones.rotationkey[boneIndex][1], keyframeFirstBones.rotationkey[boneIndex][2], keyframeFirstBones.rotationkey[boneIndex][3]);
     var secondRotation = new Quaternion(keyframeSecondBones.rotationkey[boneIndex][0], keyframeSecondBones.rotationkey[boneIndex][1], keyframeSecondBones.rotationkey[boneIndex][2], keyframeSecondBones.rotationkey[boneIndex][3]);
+    
+    keyframeFinalBones.positionkey[boneIndex] = interpolate(keyframeFirstBones.positionkey[boneIndex], keyframeSecondBones.positionkey[boneIndex], timePortion);
     keyframeFinalBones.rotationkey[boneIndex] = firstRotation.slerp(secondRotation)(timePortion);// FIXME timePortion
     keyframeFinalBones.scalingkey[boneIndex] = interpolate(keyframeFirstBones.scalingkey[boneIndex], keyframeSecondBones.scalingkey[boneIndex], timePortion);
 
-    keyframeFinalBones.matrix[boneIndex] = translate(keyframeFinalBones.positionkey[boneIndex][0], keyframeFinalBones.positionkey[boneIndex][1], keyframeFinalBones.positionkey[boneIndex][2]);
-    keyframeFinalBones.matrix[boneIndex] = mult(scale(keyframeFinalBones.scalingkey[boneIndex][0], keyframeFinalBones.scalingkey[boneIndex][1], keyframeFinalBones.scalingkey[boneIndex][2]), keyframeFinalBones.matrix[boneIndex]);
+    keyframeFinalBones.matrix[boneIndex] = object.boneTransformDict.get(boneIndex);
+
+    keyframeFinalBones.matrix[boneIndex] = scale(keyframeFinalBones.scalingkey[boneIndex][0], keyframeFinalBones.scalingkey[boneIndex][1], keyframeFinalBones.scalingkey[boneIndex][2]);
     keyframeFinalBones.matrix[boneIndex] = mult(new mat4(keyframeFinalBones.rotationkey[boneIndex].toMatrix4()), keyframeFinalBones.matrix[boneIndex]);
+    keyframeFinalBones.matrix[boneIndex] = mult(translate(keyframeFinalBones.positionkey[boneIndex][0], keyframeFinalBones.positionkey[boneIndex][1], keyframeFinalBones.positionkey[boneIndex][2]), keyframeFinalBones.matrix[boneIndex]);
     keyframeFinalBones.matrix[boneIndex] = mult(parentTransform, keyframeFinalBones.matrix[boneIndex]);
     if(node.children != undefined) {
         for(var i = 0;i < node.children.length;i++) {
@@ -251,10 +253,9 @@ function computeBone(object, node, parentTransform, keyframeFirstBones, keyframe
         }
     }
     var originBoneIndex = object.boneIndexDict.get("origin");
-    var inverseToWorldMatrix = math.inv(keyframeFinalBones.matrix[originBoneIndex]);
+    var inverseToWorldMatrix = math.inv(object.boneTransformDict.get(originBoneIndex));
     inverseToWorldMatrix.matrix = true;
     if(object.boneOffsetMatrixDict.get(boneIndex) != undefined) {
         keyframeFinalBones.matrix[boneIndex] = mult(inverseToWorldMatrix, mult(keyframeFinalBones.matrix[boneIndex], object.boneOffsetMatrixDict.get(boneIndex)));
-//         keyframeFinalBones.matrix[boneIndex] = mult(keyframeFinalBones.matrix[boneIndex], object.boneOffsetMatrixDict.get(boneIndex));
     }
 }

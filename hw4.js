@@ -74,7 +74,6 @@ var materialShininess = 30.0;
 
 window.onload = function init()
 {
-    
     var canvas = document.getElementById( "gl-canvas" );
     
     gl = canvas.getContext("webgl2");
@@ -131,7 +130,7 @@ window.onload = function init()
     document.onmouseup = handleMouseUp;
     document.onmousemove = handleMouseMove;
     
-//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0], modelMesh.animations[0], 120, 121, 0.2);
+//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0].children[0], modelMesh.animations[0], 120, 121, 0.2);
 //     console.log(keyframeBones);
         
     render();
