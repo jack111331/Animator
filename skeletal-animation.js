@@ -123,7 +123,7 @@ function renderAssimpObject(object, timestamp)
         var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0].children[0], object.animations[0], 0, 0, timestamp);
         for(var i = 0;i < keyframeBones.matrix.length-1;i++) {
             var ithBoneMatrix = 'boneMatrix['+ i.toString() + ']';
-            gl.uniformMatrix4fv(gl.getUniformLocation(program, ithBoneMatrix), false, flatten(keyframeBones.matrix[i]));
+            gl.uniformMatrix4fv(gl.getUniformLocation(objectProgram, ithBoneMatrix), false, flatten(keyframeBones.matrix[i]));
         }
         for(var i = 0;i < 6;i++) {
             // use mesh
@@ -150,19 +150,19 @@ function renderAssimpObject(object, timestamp)
                 var texture = material.properties[j];
                 if(texture.type == 3) {
                     if(texture.semantic == 1) {
-                        gl.uniform1i(gl.getUniformLocation(program, "diffuseTexture"), 1);
+                        gl.uniform1i(gl.getUniformLocation(objectProgram, "diffuseTexture"), 1);
                         gl.activeTexture(gl.TEXTURE0 + 1);
                         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 2) {
-                        gl.uniform1i(gl.getUniformLocation(program, "specularTexture"), 2);
+                        gl.uniform1i(gl.getUniformLocation(objectProgram, "specularTexture"), 2);
                         gl.activeTexture(gl.TEXTURE0 + 2);
                         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 5) {
-                        gl.uniform1i(gl.getUniformLocation(program, "heightTexture"), 5);
+                        gl.uniform1i(gl.getUniformLocation(objectProgram, "heightTexture"), 5);
                         gl.activeTexture(gl.TEXTURE0 + 5);
                         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     } else if(texture.semantic == 6) {
-                        gl.uniform1i(gl.getUniformLocation(program, "normalTexture"), 6);
+                        gl.uniform1i(gl.getUniformLocation(objectProgram, "normalTexture"), 6);
                         gl.activeTexture(gl.TEXTURE0 + 6);
                         gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                     }
