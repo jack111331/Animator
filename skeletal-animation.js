@@ -13,13 +13,13 @@ function configureMaterials( object ) {
                 image.onload = function() {
                     this.texture.texture = gl.createTexture();
                     gl.bindTexture( gl.TEXTURE_2D, this.texture.texture );
+                    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
                     gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this );
                     gl.generateMipmap( gl.TEXTURE_2D );
                     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR );
                     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST );
                     object.currentLoadMaterial++;
                 };
-                //FIXME still bugsome
                 image.src = "Bob/"+texture.value; // TODO generalize
             }
         }
@@ -115,12 +115,12 @@ function handleLoadedModel(object) {
     // deal with materials
     configureMaterials(object);
 }
-function renderAssimpObject(object)
+function renderAssimpObject(object, timestamp)
 {
     if(object.currentLoadMaterial == object.totalMaterial) {
         // pass bone into uniform
     
-        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0].children[0], object.animations[0], 0, 0, 0.0);
+        var keyframeBones = computeKeyframeBone(object, object.rootnode.children[0].children[0], object.animations[0], 0, 0, timestamp);
         for(var i = 0;i < keyframeBones.matrix.length-1;i++) {
             var ithBoneMatrix = 'boneMatrix['+ i.toString() + ']';
             gl.uniformMatrix4fv(gl.getUniformLocation(program, ithBoneMatrix), false, flatten(keyframeBones.matrix[i]));
@@ -196,18 +196,32 @@ function interpolate(vectorFirst, vectorSecond, portion) {
     }
     return result;
 }
-function computeKeyframeBone(object, rootnode, animation, keyframeFirst, keyframeSecond, timePortion) {
+function computeKeyframeBone(object, rootnode, animation, keyframeFirst, keyframeSecond, timeElapsed) {
+    
+    var ticksPerSecond = animation.tickspersecond != undefined ? animation.tickspersecond : 25.0;
+    var timeInTicks = timeElapsed * ticksPerSecond;
+    Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+    var animationTime = Math.fmod(timeInTicks, animation.duration);
+    keyframeFirst = animationTime;
+    keyframeSecond = (animationTime + 1) % animation.duration;
+
     var boneCount = animation.channels.length;
     
     var keyframeFirstBones = new Object();
     keyframeFirstBones.positionkey = new Array(boneCount);
+    keyframeFirstBones.positionkeyTime = new Array(boneCount);
     keyframeFirstBones.rotationkey = new Array(boneCount);
+    keyframeFirstBones.rotationkeyTime = new Array(boneCount);
     keyframeFirstBones.scalingkey = new Array(boneCount);
+    keyframeFirstBones.scalingkeyTime = new Array(boneCount);
 
     var keyframeSecondBones = new Object();
     keyframeSecondBones.positionkey = new Array(boneCount);
+    keyframeSecondBones.positionkeyTime = new Array(boneCount);
     keyframeSecondBones.rotationkey = new Array(boneCount);
+    keyframeSecondBones.rotationkeyTime = new Array(boneCount);
     keyframeSecondBones.scalingkey = new Array(boneCount);
+    keyframeSecondBones.scalingkeyTime = new Array(boneCount);
 
     var keyframeFinalBones = new Object();
     keyframeFinalBones.positionkey = new Array(boneCount);
@@ -218,28 +232,58 @@ function computeKeyframeBone(object, rootnode, animation, keyframeFirst, keyfram
     for(var i = 0;i < boneCount;i++) {
         var channel = animation.channels[i];
         var boneIndex = object.boneIndexDict.get(channel.name);
+        
+        var positionkeyFirst = findmaxBelowNumber(channel.positionkeys, keyframeFirst);
+        var positionkeySecond = findmaxBelowNumber(channel.positionkeys, keyframeSecond);
 
-        keyframeFirstBones.positionkey[boneIndex] = channel.positionkeys[findmaxBelowNumber(channel.positionkeys, keyframeFirst)][1];
-        keyframeFirstBones.rotationkey[boneIndex] = channel.rotationkeys[findmaxBelowNumber(channel.rotationkeys, keyframeFirst)][1];
-        keyframeFirstBones.scalingkey[boneIndex] = channel.scalingkeys[findmaxBelowNumber(channel.scalingkeys, keyframeFirst)][1];
+        var rotationkeyFirst = findmaxBelowNumber(channel.rotationkeys, keyframeFirst);
+        var rotationkeySecond = findmaxBelowNumber(channel.rotationkeys, keyframeSecond);
 
-        keyframeSecondBones.positionkey[boneIndex] = channel.positionkeys[findmaxBelowNumber(channel.positionkeys, keyframeSecond)][1];
-        keyframeSecondBones.rotationkey[boneIndex] = channel.rotationkeys[findmaxBelowNumber(channel.rotationkeys, keyframeSecond)][1];
-        keyframeSecondBones.scalingkey[boneIndex] = channel.scalingkeys[findmaxBelowNumber(channel.scalingkeys, keyframeSecond)][1];
+        var scalingkeyFirst = findmaxBelowNumber(channel.scalingkeys, keyframeFirst);
+        var scalingkeySecond = findmaxBelowNumber(channel.scalingkeys, keyframeSecond);
+                
+        keyframeFirstBones.positionkey[boneIndex] = channel.positionkeys[positionkeyFirst][1];
+        keyframeFirstBones.positionkeyTime[boneIndex] = channel.positionkeys[positionkeyFirst][0];
+        keyframeFirstBones.rotationkey[boneIndex] = channel.rotationkeys[rotationkeyFirst][1];
+        keyframeFirstBones.rotationkeyTime[boneIndex] = channel.rotationkeys[rotationkeyFirst][0];
+        keyframeFirstBones.scalingkey[boneIndex] = channel.scalingkeys[scalingkeyFirst][1];
+        keyframeFirstBones.scalingkeyTime[boneIndex] = channel.scalingkeys[scalingkeyFirst][0];
+
+        keyframeSecondBones.positionkey[boneIndex] = channel.positionkeys[positionkeySecond][1];
+        keyframeSecondBones.positionkeyTime[boneIndex] = channel.positionkeys[positionkeySecond][0];
+        keyframeSecondBones.rotationkey[boneIndex] = channel.rotationkeys[rotationkeySecond][1];
+        keyframeSecondBones.rotationkeyTime[boneIndex] = channel.rotationkeys[rotationkeySecond][0];
+        keyframeSecondBones.scalingkey[boneIndex] = channel.scalingkeys[scalingkeySecond][1];
+        keyframeSecondBones.scalingkeyTime[boneIndex] = channel.scalingkeys[scalingkeySecond][0];
         
     }
     
-    computeBone(object, rootnode, new mat4(), keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, timePortion);
+    computeBone(object, rootnode, new mat4(), keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, animationTime);
     return keyframeFinalBones;
 }
-function computeBone(object, node, parentTransform, keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, timePortion) {
+function computeBone(object, node, parentTransform, keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, animationTime) {
     var boneIndex = object.boneIndexDict.get(node.name);
     var firstRotation = new Quaternion(keyframeFirstBones.rotationkey[boneIndex][0], keyframeFirstBones.rotationkey[boneIndex][1], keyframeFirstBones.rotationkey[boneIndex][2], keyframeFirstBones.rotationkey[boneIndex][3]);
     var secondRotation = new Quaternion(keyframeSecondBones.rotationkey[boneIndex][0], keyframeSecondBones.rotationkey[boneIndex][1], keyframeSecondBones.rotationkey[boneIndex][2], keyframeSecondBones.rotationkey[boneIndex][3]);
     
-    keyframeFinalBones.positionkey[boneIndex] = interpolate(keyframeFirstBones.positionkey[boneIndex], keyframeSecondBones.positionkey[boneIndex], timePortion);
-    keyframeFinalBones.rotationkey[boneIndex] = firstRotation.slerp(secondRotation)(timePortion);// FIXME timePortion
-    keyframeFinalBones.scalingkey[boneIndex] = interpolate(keyframeFirstBones.scalingkey[boneIndex], keyframeSecondBones.scalingkey[boneIndex], timePortion);
+    if(keyframeSecondBones.positionkeyTime[boneIndex] == keyframeFirstBones.positionkeyTime[boneIndex]) {
+        var positionkeyTimePortion = 0.0;
+    } else {
+        var positionkeyTimePortion = (animationTime - keyframeFirstBones.positionkeyTime[boneIndex]) / (keyframeSecondBones.positionkeyTime[boneIndex] - keyframeFirstBones.positionkeyTime[boneIndex]);
+    }
+    keyframeFinalBones.positionkey[boneIndex] = interpolate(keyframeFirstBones.positionkey[boneIndex], keyframeSecondBones.positionkey[boneIndex], positionkeyTimePortion);
+    if(keyframeSecondBones.rotationkeyTime[boneIndex] == keyframeFirstBones.rotationkeyTime[boneIndex]) {
+        var rotationkeyTimePortion = 0.0;
+    } else {
+        var rotationkeyTimePortion = (animationTime - keyframeFirstBones.rotationkeyTime[boneIndex]) / (keyframeSecondBones.rotationkeyTime[boneIndex] - keyframeFirstBones.rotationkeyTime[boneIndex]);
+    }
+    keyframeFinalBones.rotationkey[boneIndex] = firstRotation.slerp(secondRotation)(rotationkeyTimePortion);
+    if(keyframeSecondBones.scalingkeyTime[boneIndex] == keyframeFirstBones.scalingkeyTime[boneIndex]) {
+        var scalingkeyTimePortion = 0.0;
+    } else {
+        var scalingkeyTimePortion = (animationTime - keyframeFirstBones.scalingkeyTime[boneIndex]) / (keyframeSecondBones.scalingkeyTime[boneIndex] - keyframeFirstBones.scalingkeyTime[boneIndex]);
+    }
+    keyframeFinalBones.scalingkey[boneIndex] = interpolate(keyframeFirstBones.scalingkey[boneIndex], keyframeSecondBones.scalingkey[boneIndex], scalingkeyTimePortion);
 
     keyframeFinalBones.matrix[boneIndex] = object.boneTransformDict.get(boneIndex);
 
@@ -249,7 +293,7 @@ function computeBone(object, node, parentTransform, keyframeFirstBones, keyframe
     keyframeFinalBones.matrix[boneIndex] = mult(parentTransform, keyframeFinalBones.matrix[boneIndex]);
     if(node.children != undefined) {
         for(var i = 0;i < node.children.length;i++) {
-            computeBone(object, node.children[i], keyframeFinalBones.matrix[boneIndex], keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, timePortion);
+            computeBone(object, node.children[i], keyframeFinalBones.matrix[boneIndex], keyframeFirstBones, keyframeSecondBones, keyframeFinalBones, animationTime);
         }
     }
     var originBoneIndex = object.boneIndexDict.get("origin");

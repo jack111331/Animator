@@ -17,6 +17,10 @@ var lastMouseY = null;
 
 var moonRotationMatrix = mat4();
 
+const startDateTime = Date.now();
+const startTimestamp = Math.floor(startDateTime / 1000);
+
+
 function handleMouseDown(event) {
     mouseDown = true;
     lastMouseX = event.clientX;
@@ -130,14 +134,14 @@ window.onload = function init()
     document.onmouseup = handleMouseUp;
     document.onmousemove = handleMouseMove;
     
-//     var keyframeBones = computeKeyframeBone(modelMesh, modelMesh.rootnode.children[0].children[0], modelMesh.animations[0], 120, 121, 0.2);
-//     console.log(keyframeBones);
-        
     render();
 };
 
 function render() {
-	var modeling = mult(rotate(theta[xAxis], 1, 0, 0),
+    const dateTime = Date.now();
+    const timestamp = dateTime / 1000;
+    
+    var modeling = mult(rotate(theta[xAxis], 1, 0, 0),
 	                mult(rotate(theta[yAxis], 0, 1, 0),rotate(theta[zAxis], 0, 0, 1)));
 
 	if (paused)	modeling = moonRotationMatrix;
@@ -156,8 +160,8 @@ function render() {
     gl.uniformMatrix4fv( viewingLoc,    0, flatten(viewing) );
 	gl.uniformMatrix4fv( projectionLoc, 0, flatten(projection) );
         
-    modelMesh.transform = mult(translate(0.0, 0.0, -4.0), mult(scale(0.4, 0.4, 0.4), modeling));
-    renderAssimpObject(modelMesh);
+    modelMesh.transform = mult(rotate(90.0, 0.0, 0.0, 1.0), mult(translate(0.0, 0.0, -4.0), mult(scale(0.4, 0.4, 0.4), mult(rotate(90.0, 1.0, 0.0, 0.0), modeling))));
+    renderAssimpObject(modelMesh, timestamp - startTimestamp);
 	
     requestAnimFrame( render );
 }
