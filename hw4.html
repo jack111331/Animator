@@ -122,36 +122,40 @@ uniform sampler2D colorSampler;
 uniform usampler2D intensitySampler;
 uniform int grid;
 uniform float pixelSize;
-
+uniform int enableOilPainting;
 
 void main()
 {
-    float offset = 1.0 / pixelSize; 
-    vec2 offsets[81];
-    for(int i = -grid;i <= grid;i++) {
-        for(int j = -grid;j <= grid;j++) {
-            offsets[(i+grid)*(2*grid+1)+j+grid] = vec2(offset * float(i), offset * float(j));
+    if(enableOilPainting > 0) {
+        float offset = 1.0 / pixelSize; 
+        vec2 offsets[81];
+        for(int i = -grid;i <= grid;i++) {
+            for(int j = -grid;j <= grid;j++) {
+                offsets[(i+grid)*(2*grid+1)+j+grid] = vec2(offset * float(i), offset * float(j));
+            }
         }
-    }
-    uint intensity_table[9];
-    int statistic[255];
-    uint max_statistic = 0u;
-    for(int i = 0;i < 81;i++) {
-        uint intensity = uint(texture(intensitySampler, fTexCoord + offsets[i]).r);
-        intensity_table[i] = intensity;
-        statistic[intensity]++;
-        if(statistic[max_statistic] < statistic[intensity]) {
-            max_statistic = intensity;
+        uint intensity_table[9];
+        int statistic[255];
+        uint max_statistic = 0u;
+        for(int i = 0;i < 81;i++) {
+            uint intensity = uint(texture(intensitySampler, fTexCoord + offsets[i]).r);
+            intensity_table[i] = intensity;
+            statistic[intensity]++;
+            if(statistic[max_statistic] < statistic[intensity]) {
+                max_statistic = intensity;
+            }
         }
-    }
-    vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
-    for(int i = 0;i < 81;i++) {
-        if(intensity_table[i] == max_statistic) {
-            finalColor += texture(colorSampler, fTexCoord + offsets[i]);
+        vec4 finalColor = vec4(0.0, 0.0, 0.0, 0.0);
+        for(int i = 0;i < 81;i++) {
+            if(intensity_table[i] == max_statistic) {
+                finalColor += texture(colorSampler, fTexCoord + offsets[i]);
+            }
         }
+        finalColor /= float(statistic[max_statistic]);
+        color = finalColor;
+    } else {
+        color = texture(colorSampler, fTexCoord);
     }
-    finalColor /= float(statistic[max_statistic]);
-    color = finalColor;
 }
 </script>
 
@@ -180,6 +184,7 @@ Oops ... your browser doesn't support the HTML5 canvas element
 <button id="pButton" style="background-color:#00ff00">Pause</button>
 <button id="dButton" style="background-color:#6688cc">Depth Test</button>
 <br/>
+<button id="enableOilPainting">Enable Oil Painting</button>
 <p>sample pixel size<input type="range" min="1" max="700" value="300" class="slider" id="pixelSize">
 <p>sample grid size<input type="range" min="1" max="4" value="4" class="slider" id="grid">
 <p>intensity level<input type="range" min="1" max="20" value="5" class="slider" id="intensityLevel">

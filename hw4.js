@@ -10,6 +10,7 @@ var axis = 0;
 var theta = [ 0, 0, 0 ];
 var paused = 0;
 var depthTest = 1;
+var enableOilPainting = 0;
 
 // event handlers for mouse input (borrowed from "Learning WebGL" lesson 11)
 var mouseDown = false;
@@ -200,6 +201,7 @@ window.onload = function init()
     document.getElementById( "zButton" ).onclick = rotateZ;
     document.getElementById( "pButton" ).onclick = function() {paused=!paused;};
     document.getElementById( "dButton" ).onclick = function() {depthTest=!depthTest;};
+    document.getElementById( "enableOilPainting" ).onclick = function() {enableOilPainting=!enableOilPainting;};
 	
 	// event handlers for mouse input (borrowed from "Learning WebGL" lesson 11)
 	canvas.onmousedown = handleMouseDown;
@@ -255,6 +257,7 @@ function render() {
     gl.uniform1i( gl.getUniformLocation(screenProgram, "intensitySampler"), 1);
     gl.uniform1f( gl.getUniformLocation(screenProgram, "pixelSize"), document.getElementById( "pixelSize" ).value);
     gl.uniform1i( gl.getUniformLocation(screenProgram, "grid"), document.getElementById( "grid" ).value);
+    gl.uniform1i( gl.getUniformLocation(screenProgram, "enableOilPainting"), enableOilPainting ? 1 : 0);
 	
     gl.drawArrays( gl.TRIANGLES, 0, 6 );
     
